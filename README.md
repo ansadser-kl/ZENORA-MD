@@ -92,13 +92,11 @@ If `PAIR_NUMBER` is empty a QR code is printed in the logs instead.
    ```
 3. Configuration
    ```
-   echo "VPS = true
-     SESSION_ID = null
-     AUTH_FILE = session
-     SUDO = null
-     PREFIX = .
-     MODE = private
-     LOG_MSG = true" > config.env
+   echo "VPS 
+SESSION_ID=mybot
+PAIR_NUMBER=91987654321
+MODE=public
+SUDO=919876543210" > config.env
    ```
 - Start
   ```
