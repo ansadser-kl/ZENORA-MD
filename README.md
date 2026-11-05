@@ -63,7 +63,7 @@ pair directly from the bot's own logs (QR if `PAIR_NUMBER` is empty).
 2. Installation
    ```
    npm i -global pm2
-   git clone https://github.com/ansadser-kl/hermit-md.git
+   git clone https://github.com/ansadser-kl/ZENORA-MD.git
    cd hermit-md
    npm install
    ```
@@ -80,6 +80,6 @@ pair directly from the bot's own logs (QR if `PAIR_NUMBER` is empty).
   ```
 - Stop
   ```
-  pm2 delete hermit-md
+  pm2 delete ZENORA-MD
   ```
 <br>
