@@ -26,6 +26,16 @@ const inProgress = new Set();            // ownerJid currently going through .pa
 const ownerKey = (jid) => String(jid || '').split(':')[0];
 const numberOf = (jid) => ownerKey(jid).split('@')[0].replace(/\D/g, '');
 
+// .pair                -> the sender's own number
+// .pair <number>        -> that number (country code, with or without +)
+// .pair (as a reply)    -> the number of the replied-to message's sender
+function pickTarget(message, match) {
+	const typed = String(match || '').replace(/\D/g, '');
+	if (typed.length >= 7) return typed;
+	if (message.reply_message && message.reply_message.sender) return numberOf(message.reply_message.sender);
+	return numberOf(message.sender);
+}
+
 function restoreClonesOnBoot() {
 	if (!cloneManager.canCloneHere()) return; // a clone does not resurrect its own sub-clones
 	try {
@@ -40,18 +50,18 @@ function restoreClonesOnBoot() {
 restoreClonesOnBoot();
 
 Function({
-	pattern: 'pair',
+	pattern: 'pair ?(.*)',
 	fromMe: isPublic,
-	desc: 'Get your own clone of this bot (links your WhatsApp with a pairing code)',
+	desc: 'Get a clone of this bot (links a WhatsApp number with a pairing code). ".pair", ".pair <number>", or reply to someone with ".pair"',
 	type: 'tools'
-}, async (message) => {
+}, async (message, match) => {
 	if (!cloneManager.canCloneHere()) {
 		return await message.reply('*Cloning is disabled here.*\n_This bot is itself a clone._');
 	}
 
 	const owner = ownerKey(message.sender);
-	const number = numberOf(message.sender);
-	if (!owner || number.length < 7) return await message.reply('*Could not read your number from this chat.*');
+	const number = pickTarget(message, match);
+	if (!owner || number.length < 7) return await message.reply('*Could not read a valid number.*\n_Use *.pair 919876543210*, reply to someone with *.pair*, or just send *.pair* for your own number._');
 
 	const existing = registry.get(owner);
 	if (existing && cloneManager.isActive(existing.sessionId)) {
