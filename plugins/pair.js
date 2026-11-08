@@ -36,8 +36,18 @@ function pickTarget(message, match) {
 	return numberOf(message.sender);
 }
 
+// A clone and the main bot both read/write the SAME creds storage (that is how the clone gets its
+// session at all). A local SQLite file is single-writer and does NOT handle two Node processes
+// hitting it at once — it throws SQLITE_READONLY and can even knock the main bot's own WhatsApp
+// connection offline. A real database (DATABASE_URL = Postgres) handles concurrent access safely.
+const hasSharedDb = () => !!(process.env.DATABASE_URL || '').trim();
+
 function restoreClonesOnBoot() {
 	if (!cloneManager.canCloneHere()) return; // a clone does not resurrect its own sub-clones
+	if (!hasSharedDb()) {
+		console.error('[pair] DATABASE_URL is not set — not restoring clones (SQLite cannot be shared safely with clone processes).');
+		return;
+	}
 	try {
 		for (const owner of registry.getAllKeys()) {
 			const entry = registry.get(owner);
@@ -57,6 +67,13 @@ Function({
 }, async (message, match) => {
 	if (!cloneManager.canCloneHere()) {
 		return await message.reply('*Cloning is disabled here.*\n_This bot is itself a clone._');
+	}
+	if (!hasSharedDb()) {
+		return await message.reply(
+			'*Cloning needs a real database.*\n' +
+			'_Set *DATABASE_URL* (a Postgres database) first — SQLite (the default) cannot be safely ' +
+			'shared between the main bot and a clone and will crash both._'
+		);
 	}
 
 	const owner = ownerKey(message.sender);
