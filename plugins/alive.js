@@ -7,7 +7,7 @@ const {
 	isChatBot,
 	chatbot
 } = require("../lib/");
-const config = require('../config')
+const config = require('../config');
 
 Function({
 	pattern: 'ping ?(.*)',
@@ -15,11 +15,15 @@ Function({
 	desc: 'Bot response in second.',
 	type: 'info'
 }, async (message, match, client) => {
-	var start = new Date().getTime();
-	var msg = await message.reply('*Ping!*');
-	var end = new Date().getTime();
-	var responseTime = end - start;
-	await message.reply(`*Pong!*\nLatency: ${responseTime}ms`);
+	const start = new Date().getTime();
+	const msg = await message.reply('```Ping!```');
+	const end = new Date().getTime();
+	const responseTime = end - start;
+
+	await client.sendMessage(message.chat || message.jid, {
+		text: `*Pong!*\nLatency: \`${responseTime}ms\``,
+		edit: msg.key
+	});
 });
 
 Function({
@@ -37,7 +41,7 @@ Function({
 	desc: 'to get remoteJid',
 	type: 'whatsapp'
 }, async (message) => {
-	await message.reply(message.mentionedJid[0] ? message.mentionedJid[0] : message.quoted ? message.quoted.sender : message.chat)
+	await message.reply(message.mentionedJid[0] ? message.mentionedJid[0] : message.quoted ? message.quoted.sender : message.chat);
 });
 
 Function({
@@ -53,8 +57,8 @@ Function({
 	on: 'text',
 	fromMe: false
 }, async (message, match) => {
-	if (!await isChatBot(message)) return
-	if (!message.reply_message) return
-	if (!message.reply_message.data.key.fromMe) return
-	await message.reply(await chatbot(message))
-})
+	if (!await isChatBot(message)) return;
+	if (!message.reply_message) return;
+	if (!message.reply_message.data.key.fromMe) return;
+	await message.reply(await chatbot(message));
+});
